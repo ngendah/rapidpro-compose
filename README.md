@@ -1,6 +1,10 @@
-RapidPro Docker Stack
+RapidPro docker Stack
 =====================
-A complete RapidPro docker stack; including courier.
+
+[![Build Status](https://travis-ci.org/ngendah/rapidpro.svg?branch=master)](https://travis-ci.org/ngendah/rapidpro)
+
+
+The complete RapidPro docker stack; including courier.
 
 * To build and run the server
 
