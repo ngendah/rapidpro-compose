@@ -2,7 +2,7 @@ language: python
 services: docker
 
 install:
-  - docker-compose -f main.yml build
+  - docker-compose -f main.yaml build
   - docker images | wc -l
 
 script:
