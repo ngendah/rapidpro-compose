@@ -21,6 +21,7 @@ if [ "x$MANAGEPY_INIT_DB" = "xon" ]; then
 fi
 if [ "x$MANAGEPY_MIGRATE" = "xon" ]; then
 	python manage.py migrate
+    python manage.py shell -c "from django.contrib.auth.models import User; User.objects.create_superuser(\"$ADMIN_USERNAME\", \"$ADMIN_EMAIL\", \"$ADMIN_PASSWORD\")"
 fi
 if [ "x$MANAGEPY_IMPORT_GEOJSON" = "xon" ]; then
 	echo "Downloading geojson for relation_ids $OSM_RELATION_IDS"
