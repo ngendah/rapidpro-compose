@@ -58,9 +58,9 @@ services:
       options:
         tag: "{{.Name}}"
   postgresql:
-    image: mdillon/postgis:latest
+    image: mdillon/postgis:10-alpine
     volumes:
-      - /var/lib/postgresql/95/:/var/lib/postgresql:Z
+      - /var/lib/postgresql/10/:/var/lib/postgresql:Z
     environment:
       - POSTGRES_DB=rapidpro
     logging:

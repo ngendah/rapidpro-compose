@@ -35,8 +35,5 @@ if [ "$TYPE" == "celery-base" ]; then
 elif [ "$TYPE" == "celery-msgs" ]; then
     exec celery --beat --app=temba worker --loglevel=$LOG_LEVEL --queues=msgs,handler
 elif [ "$TYPE" == "rapidpro" ]; then
-    # Enable HTTP 1.1 Keep Alive options for uWSGI (http-auto-chunked needed when ConditionalGetMiddleware not installed)
-    # These options don't appear to be configurable via environment variables, so pass them in here instead
-    # exec uwsgi --http-auto-chunked --http-keepalive
     exec python manage.py runserver 0.0.0.0:8000
 fi
