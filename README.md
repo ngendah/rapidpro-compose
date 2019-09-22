@@ -1,6 +1,6 @@
-RapidPro Stack
-===============
-A complete RapidPro stack; including courier.
+RapidPro Docker Stack
+=====================
+A complete RapidPro docker stack; including courier.
 
 * To build and run the server
 
@@ -15,10 +15,3 @@ https://localhost
 ```
 
 * RapidPro environment variables are available on the file, `rapidpro.env`.
-
-
-* To remove all containers
-
-```
-sudo docker-compose rm -fsv
-```
