@@ -1,33 +1,35 @@
 version: '3'
 services:
   backend:
-    image: rapidpro:4.16.3-alpine
+    image: rapidpro:5.0.0-alpine
     build:
       context: rapidpro
       args:
-        - RAPIDPRO_VERSION=v4.16.3
+        - RAPIDPRO_VERSION=v5.0.0
     depends_on:
+      - mailroom
       - redis
       - postgresql
     env_file:
       - rapidpro.env
       - secrets
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - MAILROOM_URL=http://mailroom:8090
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro-v2
       - REDIS_URL=redis://redis:6379/15
     logging:
       driver: journald
       options:
         tag: "{{.Name}}"
   celery_base:
-    image: rapidpro:4.16.3-alpine
+    image: rapidpro:5.0.0-alpine
     depends_on:
       - backend
     env_file:
       - secrets
     environment:
       - BOXTYPE=celery-base
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro-v2
       - REDIS_URL=redis://redis:6379/15
       - DJANGO_DEBUG=off
       - LOG_LEVEL=ERROR
@@ -36,14 +38,14 @@ services:
       options:
         tag: "{{.Name}}"
   celery_msgs:
-    image: rapidpro:4.16.3-alpine
+    image: rapidpro:5.0.0-alpine
     depends_on:
       - backend
     env_file:
       - secrets
     environment:
       - BOXTYPE=celery-msgs
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro-v2
       - REDIS_URL=redis://redis:6379/15
       - DJANGO_DEBUG=off
       - LOG_LEVEL=ERROR
@@ -62,13 +64,29 @@ services:
     volumes:
       - /var/lib/postgresql/10/:/var/lib/postgresql:Z
     environment:
-      - POSTGRES_DB=rapidpro
+      - POSTGRES_DB=rapidpro-v2
     logging:
       driver: journald
       options:
         tag: "{{.Name}}"
+  archiver:
+    image: praekeltfoundation/rp-indexer:1.0.23
+    environment:
+      - ARCHIVER_DB=postgres://postgres:postgres@postgresql/rapidpro-v2?sslmode=disable
+      - ARCHIVER_DELETE=true
+    volumes:
+      - "/tmp:/tmp:Z"
+  mailroom:
+   image: praekeltfoundation/mailroom:2.0.24
+   environment:
+     - MAILROOM_ADDRESS=0.0.0.0
+     - MAILROOM_DOMAIN=mailroom
+     - MAILROOM_DB=postgres://postgres:postgres@postgresql/rapidpro-v2?sslmode=disable
+     - MAILROOM_REDIS=redis://redis:6379/15
+   ports:
+     - "8090:8080"
   courier:
-   image: praekeltfoundation/courier
+   image: praekeltfoundation/courier:2.0
    ports:
      - "8080:8080"
    depends_on:
@@ -79,9 +97,9 @@ services:
       options:
         tag: "{{.Name}}"
    environment:
-     - COURIER_DOMAIN=localhost
+     - COURIER_DOMAIN=courier
      - COURIER_SPOOL_DIR=/tmp
-     - COURIER_DB=postgres://postgres:postgres@postgresql/rapidpro?sslmode=disable
+     - COURIER_DB=postgres://postgres:postgres@postgresql/rapidpro-v2?sslmode=disable
      - COURIER_REDIS=redis://redis:6379/15
   rapidpro:
     build:
@@ -103,4 +121,3 @@ services:
       driver: journald
       options:
         tag: "{{.Name}}"
-
