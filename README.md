@@ -1,5 +1,5 @@
-RapidPro docker Stack
-=====================
+RapidPro v4 docker Stack
+========================
 
 [![Build Status](https://travis-ci.org/ngendah/rapidpro.svg?branch=master)](https://travis-ci.org/ngendah/rapidpro)
 
