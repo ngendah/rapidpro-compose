@@ -59,6 +59,8 @@ services:
         tag: "{{.Name}}"
   postgresql:
     image: mdillon/postgis:latest
+    volumes:
+      - /var/lib/postgresql/95/:/var/lib/postgresql:Z
     environment:
       - POSTGRES_DB=rapidpro
     logging:
