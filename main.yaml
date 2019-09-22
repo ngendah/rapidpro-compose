@@ -1,0 +1,104 @@
+version: '3'
+services:
+  backend:
+    image: rapidpro:4.16.3-alpine
+    build:
+      context: rapidpro
+      args:
+        - RAPIDPRO_VERSION=v4.16.3
+    depends_on:
+      - redis
+      - postgresql
+    env_file:
+      - rapidpro.env
+      - secrets
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - REDIS_URL=redis://redis:6379/15
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+  celery_base:
+    image: rapidpro:4.16.3-alpine
+    depends_on:
+      - backend
+    env_file:
+      - secrets
+    environment:
+      - BOXTYPE=celery-base
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - REDIS_URL=redis://redis:6379/15
+      - DJANGO_DEBUG=off
+      - LOG_LEVEL=ERROR
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+  celery_msgs:
+    image: rapidpro:4.16.3-alpine
+    depends_on:
+      - backend
+    env_file:
+      - secrets
+    environment:
+      - BOXTYPE=celery-msgs
+      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
+      - REDIS_URL=redis://redis:6379/15
+      - DJANGO_DEBUG=off
+      - LOG_LEVEL=ERROR
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+  redis:
+    image: redis:alpine
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+  postgresql:
+    image: mdillon/postgis:latest
+    environment:
+      - POSTGRES_DB=rapidpro
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+  courier:
+   image: praekeltfoundation/courier
+   ports:
+     - "8080:8080"
+   depends_on:
+     - backend
+     - postgresql
+   logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+   environment:
+     - COURIER_DOMAIN=localhost
+     - COURIER_SPOOL_DIR=/tmp
+     - COURIER_DB=postgres://postgres:postgres@postgresql/rapidpro?sslmode=disable
+     - COURIER_REDIS=redis://redis:6379/15
+  rapidpro:
+    build:
+      context: nginx
+      args:
+        CERT_ORG_NAME: kiboko.io
+        CERT_ORG_UNIT: kiboko.io
+        CERT_COMMON_NAME: rapidpro
+        CERT_COUNTRY: KE
+        CERT_LOCALITY: KE
+    command: [nginx-debug, '-g', 'daemon off;']
+    depends_on:
+      - courier
+    ports:
+      - "80:80"
+      - "443:443"
+      - "4443:4443"
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+
