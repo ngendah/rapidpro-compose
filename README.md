@@ -9,7 +9,7 @@ The complete RapidPro docker stack; including courier.
 * To build and run the server
 
 ```
-sudo docker-compose -f main.yml up --build
+sudo docker-compose up --build
 ```
 
 * Once up and running you can access Rapidpro from your browser as follows;
