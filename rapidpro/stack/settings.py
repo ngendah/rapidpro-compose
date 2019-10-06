@@ -25,6 +25,8 @@ DEBUG = env('DJANGO_DEBUG', 'off') == 'on'
 INTERNAL_IPS = ('*',)
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', HOSTNAME).split(';')
 LOGGING['root']['level'] = env('DJANGO_LOG_LEVEL', 'INFO')
+MAILROOM_URL = env('MAILROOM_URL', 'http://localhost:8090')
+MAILROOM_AUTH_TOKEN = None
 
 BRANDING = {
     'rapidpro.io': {
