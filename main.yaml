@@ -1,11 +1,11 @@
 version: '3'
 services:
   backend:
-    image: rapidpro:5.2.6-alpine
+    image: rapidpro:5.5.0-alpine
     build:
       context: rapidpro
       args:
-        - RAPIDPRO_VERSION=v5.2.6
+        - RAPIDPRO_VERSION=v5.5.0
     depends_on:
       - mailroom
       - redis
@@ -22,7 +22,7 @@ services:
       options:
         tag: "{{.Name}}"
   celery_base:
-    image: rapidpro:5.2.6-alpine
+    image: rapidpro:5.5.0-alpine
     depends_on:
       - backend
     env_file:
@@ -38,7 +38,7 @@ services:
       options:
         tag: "{{.Name}}"
   celery_msgs:
-    image: rapidpro:5.2.6-alpine
+    image: rapidpro:5.5.0-alpine
     depends_on:
       - backend
     env_file:
