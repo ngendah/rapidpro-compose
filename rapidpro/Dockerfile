@@ -50,6 +50,7 @@ RUN echo "Downloading RapidPro ${RAPIDPRO_VERSION} from https://github.com/$RAPI
 
 WORKDIR rapidpro/
 COPY stack/requirements.txt ./
+RUN npm config set unsafe-perm true
 RUN set -ex \
     && npm install -g coffee-script less bower \
     && npm install \
