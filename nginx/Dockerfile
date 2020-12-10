@@ -1,13 +1,16 @@
 FROM nginx:alpine
 
-RUN apk add --no-cache --virtual .deps openssl pwgen
-
+ARG TZ
 ARG CERT_ORG_NAME
 ARG CERT_ORG_UNIT
 ARG CERT_COMMON_NAME
 ARG CERT_COUNTRY
 ARG CERT_LOCALITY
 
+ENV TZ=${TZ:-Africa/Nairobi}
+
+RUN apk add --no-cache --virtual .deps openssl pwgen tzdata
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN set -ex \
     && mkdir -p /etc/ssl \
     && cd /etc/ssl/ \
@@ -19,4 +22,4 @@ RUN set -ex \
     && openssl x509 -req -sha256 -days 360 -in server.csr -signkey server.key -out server.crt
 
 COPY ./nginx.conf /etc/nginx/
-
+COPY ./proxy.conf /etc/nginx/

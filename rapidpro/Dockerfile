@@ -1,15 +1,12 @@
 FROM rapidpro/rapidpro-base:v4
+
+ARG TZ
 ARG RAPIDPRO_VERSION
-ENV PIP_RETRIES=120 \
-    PIP_TIMEOUT=400 \
-    PIP_DEFAULT_TIMEOUT=400 \
-    C_FORCE_ROOT=1 \
-    PIP_EXTRA_INDEX_URL="https://alpine-3.wheelhouse.praekelt.org/simple"
+ARG RAPIDPRO_REPO
 
 RUN set -ex \
   && apk add --no-cache \
-    nodejs nodejs-npm libxml2 pcre openssl tar postgresql-client libmagic
-
+    nodejs nodejs-npm libxml2 pcre openssl tar postgresql-client libmagic supervisor tzdata
 RUN set -ex \
         && apk add --no-cache --virtual .build-deps \
                 bash \
@@ -36,35 +33,32 @@ RUN set -ex \
                 ncurses-dev \
                 libzmq
 
+ENV TZ=${TZ:-Africa/Nairobi}
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 WORKDIR /root
 
-ARG RAPIDPRO_VERSION
-ARG RAPIDPRO_REPO
-ENV RAPIDPRO_VERSION=${RAPIDPRO_VERSION:-master}
+ENV RAPIDPRO_VERSION="v$RAPIDPRO_VERSION"
 ENV RAPIDPRO_REPO=${RAPIDPRO_REPO:-rapidpro/rapidpro}
-RUN echo "Downloading RapidPro ${RAPIDPRO_VERSION} from https://github.com/$RAPIDPRO_REPO/archive/${RAPIDPRO_VERSION}.tar.gz" \
-    && wget -q -O rapidpro.tar.gz "https://github.com/$RAPIDPRO_REPO/archive/${RAPIDPRO_VERSION}.tar.gz" \
+ENV RAPIDPRO_REPO_URL="https://github.com/$RAPIDPRO_REPO/archive/$RAPIDPRO_VERSION.tar.gz"
+
+RUN echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
+    && wget -q -O rapidpro.tar.gz $RAPIDPRO_REPO_URL \
     && mkdir rapidpro \
     && tar -C rapidpro -xf rapidpro.tar.gz --strip-components=1 \
     && rm rapidpro.tar.gz
 
 WORKDIR rapidpro/
-COPY stack/requirements.txt ./
-RUN npm config set unsafe-perm true
+
 RUN set -ex \
-    && npm install -g coffee-script less bower \
+    && npm install -g coffeescript less\
     && npm install \
-    && bower install --allow-root \
-    && pip install "setuptools==33.1.1" \
-    && pip install -r "requirements.txt" \
+    && pip install -r "pip-freeze.txt" \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
 COPY stack/settings.py temba/
-COPY stack/500.html templates/
-COPY stack/init_db.sql ./
-COPY stack/clear-compressor-cache.py ./
-COPY startup.sh ./
+COPY startup.sh supervisor.conf  ./
 
 EXPOSE 8000
 ENTRYPOINT ["sh", "-c", "./startup.sh"]

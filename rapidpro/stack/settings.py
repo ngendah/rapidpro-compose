@@ -1,168 +1,141 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from getenv import env
-import dj_database_url
-import django_cache_url
-from datetime import datetime
-from django.utils.translation import ugettext_lazy as _
-from temba.settings_common import *  # noqa
+# -----------------------------------------------------------------------------------
+# Sample RapidPro settings file, this should allow you to deploy RapidPro locally on
+# a PostgreSQL database.
+#
+# The following are requirements:
+#     - a postgreSQL database named 'temba', with a user name 'temba' and
+#       password 'temba' (with postgis extensions installed)
+#     - a redis instance listening on localhost
+# -----------------------------------------------------------------------------------
+import os
+import copy
+import warnings
 
-INSTALLED_APPS = (
-    INSTALLED_APPS +
-    tuple(filter(None, env('EXTRA_INSTALLED_APPS', '').split(','))) +
-    ('raven.contrib.django.raven_compat',))
+from django.core.exceptions import ImproperlyConfigured
+from .settings_common import *  # noqa
+
+def env(var_name, default=None):
+        try:
+            if default:
+                return os.environ.get(var_name, default)
+            return os.environ[var_name]
+        except KeyError:
+            msg = "missing environment, name %s" % var_name
+            raise ImproperlyConfigured(msg)
+
+STORAGE_URL = "http://localhost:8000/media"
 
 # -----------------------------------------------------------------------------------
-# Core, in my opinion
+# Add a custom brand for development
 # -----------------------------------------------------------------------------------
 
-# hostname used when creating callbacks for Twilio, Nexmo, kannel etc..
-HOSTNAME = env('DOMAIN_NAME', 'rapidpro.ngrok.com')
-TEMBA_HOST = env('TEMBA_HOST', HOSTNAME)
+custom = copy.deepcopy(BRANDING["rapidpro.io"])
+custom["aliases"] = ["custom-brand.org"]
+custom["name"] = "Custom Brand"
+custom["slug"] = "custom"
+custom["org"] = "Custom"
+custom["api_link"] = "http://custom-brand.io"
+custom["domain"] = "custom-brand.io"
+custom["email"] = "join@custom-brand.io"
+custom["support_email"] = "support@custom-brand.io"
+custom["allow_signups"] = True
+BRANDING["custom-brand.io"] = custom
 
-ROOT_URLCONF = env('ROOT_URLCONF', 'temba.urls')
-DEBUG = env('DJANGO_DEBUG', 'off') == 'on'
-INTERNAL_IPS = ('*',)
-ALLOWED_HOSTS = env('ALLOWED_HOSTS', HOSTNAME).split(';')
-LOGGING['root']['level'] = env('DJANGO_LOG_LEVEL', 'INFO')
-MAILROOM_URL = env('MAILROOM_URL', 'http://localhost:8090')
-MAILROOM_AUTH_TOKEN = None
+# make another copy as an alternate domain for custom-domain
+custom2 = copy.deepcopy(custom)
+custom2["aliases"] = ["custom-brand.io"]
+custom2["api_link"] = "http://custom-brand.org"
+custom2["domain"] = "custom-brand.org"
+custom2["email"] = "join@custom-brand.org"
+custom2["support_email"] = "support@custom-brand.org"
+BRANDING["custom-brand.org"] = custom2
 
-BRANDING = {
-    'rapidpro.io': {
-        'slug': env('BRANDING_SLUG', 'rapidpro'),
-        'name': env('BRANDING_NAME', 'RapidPro'),
-        'org': env('BRANDING_ORG', 'RapidPro'),
-        'colors': dict([rule.split('=') for rule in env('BRANDING_COLORS', 'primary=#0c6596').split(';')]),
-        'styles': ['brands/rapidpro/font/style.css'],
-        'welcome_topup': 1000,
-        'email': env('BRANDING_EMAIL', 'join@rapidpro.io'),
-        'support_email': env('BRANDING_SUPPORT_EMAIL', 'join@rapidpro.io'),
-        'link': env('BRANDING_LINK', 'https://app.rapidpro.io'),
-        'api_link': env('BRANDING_API_LINK', 'https://api.rapidpro.io'),
-        'docs_link': env('BRANDING_DOCS_LINK', 'http://docs.rapidpro.io'),
-        'domain': HOSTNAME,
-        'favico': env('BRANDING_FAVICO', 'brands/rapidpro/rapidpro.ico'),
-        'splash': env('BRANDING_SPLASH', '/brands/rapidpro/splash.jpg'),
-        'logo': env('BRANDING_LOGO', '/brands/rapidpro/logo.png'),
-        'allow_signups': env('BRANDING_ALLOW_SIGNUPS', True),
-        'tiers': dict(import_flows=0, multi_user=0, multi_org=0),
-        'bundles': [],
-        'welcome_packs': [dict(size=5000, name="Demo Account"), dict(size=100000, name="UNICEF Account")],
-        'description': _("Visually build nationally scalable mobile applications from anywhere in the world."),
-        'credits': _("Copyright &copy; 2012-%s UNICEF, Nyaruka, and individual contributors. All Rights Reserved." % (
-            datetime.now().strftime('%Y')
-        ))
+custom3 = copy.deepcopy(BRANDING["rapidpro.io"])
+custom3["aliases"] = ["no-topups.org"]
+custom3["name"] = "No Topups"
+custom3["slug"] = "notopups"
+custom3["org"] = "NoTopups"
+custom3["api_link"] = "http://no-topups.org"
+custom3["domain"] = "no-topups.org"
+custom3["email"] = "join@no-topups.org"
+custom3["support_email"] = "support@no-topups.org"
+custom3["allow_signups"] = True
+custom3["welcome_topup"] = 0
+custom3["default_plan"] = "trial"
+BRANDING["no-topups.org"] = custom3
+
+# set our domain on our brands to our tunnel domain if set
+localhost_domain = os.environ.get("LOCALHOST_TUNNEL_DOMAIN")
+if localhost_domain is not None:
+    for b in BRANDING.values():
+        b["domain"] = localhost_domain
+
+# allow all hosts in dev
+ALLOWED_HOSTS = ["*"]
+
+# -----------------------------------------------------------------------------------
+# Customize database connection
+# -----------------------------------------------------------------------------------
+
+DATABASES["default"]["NAME"] = env("POSTGRES_DB", DATABASES["default"]["NAME"])
+DATABASES["default"]["USER"] = env("POSTGRES_USER", DATABASES["default"]["USER"])
+DATABASES["default"]["PASSWORD"] = env("POSTGRES_PASSWORD", DATABASES["default"]["PASSWORD"])
+DATABASES["default"]["HOST"] = env("POSTGRES_HOST", DATABASES["default"]["HOST"])
+DATABASES["default"]["PORT"] = env("POSTGRES_PORT", DATABASES["default"]["PORT"])
+DATABASES["direct"] = DATABASES["default"]
+
+# -----------------------------------------------------------------------------------
+# Redis & Cache Configuration (we expect a Redis instance on localhost)
+# -----------------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_URL"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
-DEFAULT_BRAND = 'rapidpro.io'
-SECRET_KEY = env('SECRET_KEY', required=True)
-DATABASE_URL = env('DATABASE_URL', required=True)
-DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
-DATABASES['default']['CONN_MAX_AGE'] = 60
-DATABASES['default']['ATOMIC_REQUESTS'] = True
-DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
-REDIS_URL = env('REDIS_URL', required=True)
-BROKER_URL = env('BROKER_URL', REDIS_URL)
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', REDIS_URL)
-CACHE_URL = env('CACHE_URL', REDIS_URL)
-CACHES = {'default': django_cache_url.parse(CACHE_URL)}
-if CACHES['default']['BACKEND'] == 'django_redis.cache.RedisCache':
-    if 'OPTIONS' not in CACHES['default']:
-        CACHES['default']['OPTIONS'] = {}
-    CACHES['default']['OPTIONS']['CLIENT_CLASS'] = 'django_redis.client.DefaultClient'
 
-RAVEN_CONFIG = {
-    'dsn': env('RAVEN_DSN'),
-    'release': env('RAPIDPRO_VERSION'),
-}
+INTERNAL_IPS = ("127.0.0.1",)
 
 # -----------------------------------------------------------------------------------
+# Mailroom - localhost for dev, no auth token
+# -----------------------------------------------------------------------------------
+MAILROOM_URL = os.environ.get('MAILROOM_URL', 'http://localhost:8090')
+MAILROOM_AUTH_TOKEN = None
 
-AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME', '')
-AWS_BUCKET_DOMAIN = env('AWS_BUCKET_DOMAIN', AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com')
-CDN_DOMAIN_NAME = env('CDN_DOMAIN_NAME', '')
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', '')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', '')
-AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME', '')
-AWS_DEFAULT_ACL = env('AWS_DEFAULT_ACL', '')
-AWS_LOCATION = env('AWS_LOCATION', '')
-AWS_STATIC = env('AWS_STATIC', bool(AWS_STORAGE_BUCKET_NAME))
-AWS_MEDIA = env('AWS_MEDIA', bool(AWS_STORAGE_BUCKET_NAME))
+# -----------------------------------------------------------------------------------
+# Load development apps
+# -----------------------------------------------------------------------------------
+INSTALLED_APPS = INSTALLED_APPS + ("storages",)
 
-if AWS_STORAGE_BUCKET_NAME:
-    # Tell django-storages that when coming up with the URL for an item in S3 storage, keep
-    # it simple - just use this domain plus the path. (If this isn't set, things get complicated).
-    # This controls how the `static` template tag from `staticfiles` gets expanded, if you're using it.
-    # We also use it in the next setting.
-    # If we call this setting `AWS_S3_CUSTOM_DOMAIN`, that breaks presigned URLs in
-    # django-storages. Use our own setting for the domain instead, which is unknown to
-    # django-storages.
+# -----------------------------------------------------------------------------------
+# In development, add in extra logging for exceptions and the debug toolbar
+# -----------------------------------------------------------------------------------
+MIDDLEWARE = ("temba.middleware.ExceptionMiddleware",) + MIDDLEWARE
 
-    if CDN_DOMAIN_NAME:
-        AWS_S3_DOMAIN = CDN_DOMAIN_NAME
-    else:
-        AWS_S3_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+# -----------------------------------------------------------------------------------
+# In development, perform background tasks in the web thread (synchronously)
+# -----------------------------------------------------------------------------------
+CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+BROKER_BACKEND = "memory"
 
-    if AWS_STATIC:
-        # This is used by the `static` template tag from `static`, if you're using that. Or if anything else
-        # refers directly to STATIC_URL. So it's safest to always set it.
-        STATIC_URL = "https://%s/" % AWS_S3_DOMAIN
+# -----------------------------------------------------------------------------------
+# This setting throws an exception if a naive datetime is used anywhere. (they should
+# always contain a timezone)
+# -----------------------------------------------------------------------------------
+warnings.filterwarnings(
+    "error", r"DateTimeField .* received a naive datetime", RuntimeWarning, r"django\.db\.models\.fields"
+)
 
-        # Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
-        # you run `collectstatic`).
-        STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# -----------------------------------------------------------------------------------
+# Make our sitestatic URL be our static URL on development
+# -----------------------------------------------------------------------------------
+STATIC_URL = "/sitestatic/"
 
-        COMPRESS_STORAGE = STATICFILES_STORAGE
 
-    if AWS_MEDIA:
-        MEDIA_URL = "https://s3.amazonaws.com/%s/media/" % (AWS_STORAGE_BUCKET_NAME)
-
-        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-else:
-    STORAGE_URL = env('STORAGE_URI', '/tmp')
-
-if not AWS_STATIC:
-    STATIC_URL = '/sitestatic/'
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    MIDDLEWARE = list(MIDDLEWARE) + ['whitenoise.middleware.WhiteNoiseMiddleware']
-
-COMPRESS_ENABLED = env('DJANGO_COMPRESSOR', 'on') == 'on'
-COMPRESS_OFFLINE = False
-
-COMPRESS_URL = STATIC_URL
-# Use MEDIA_ROOT rather than STATIC_ROOT because it already exists and is
-# writable on the server. It's also the directory where other cached files
-# (e.g., translations) are stored
-COMPRESS_ROOT = STATIC_ROOT
-COMPRESS_CSS_HASHING_METHOD = 'content'
-COMPRESS_OFFLINE_MANIFEST = 'manifest-%s.json' % env('RAPIDPRO_VERSION', required=True)
-
-MAGE_AUTH_TOKEN = env('MAGE_AUTH_TOKEN', None)
-MAGE_API_URL = env('MAGE_API_URL', '')
-SEND_MESSAGES = env('SEND_MESSAGES', 'off') == 'on'
-SEND_WEBHOOKS = env('SEND_WEBHOOKS', 'off') == 'on'
-SEND_EMAILS = env('SEND_EMAILS', 'off') == 'on'
-SEND_AIRTIME = env('SEND_AIRTIME', 'off') == 'on'
-SEND_CALLS = env('SEND_CALLS', 'off') == 'on'
-IP_ADDRESSES = tuple(filter(None, env('IP_ADDRESSES', '').split(',')))
-
-EMAIL_HOST = env('EMAIL_HOST', '')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')
-EMAIL_PORT = int(env('EMAIL_PORT', 25))
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', '')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = env('EMAIL_USE_TLS', 'on') == 'on'
-SECURE_PROXY_SSL_HEADER = (
-    env('SECURE_PROXY_SSL_HEADER', 'HTTP_X_FORWARDED_PROTO'), 'https')
-IS_PROD = env('IS_PROD', 'off') == 'on'
-
-# build up our offline compression context based on available brands
-COMPRESS_OFFLINE_CONTEXT = []
-for brand in BRANDING.values():
-    context = dict(STATIC_URL=STATIC_URL, base_template='frame.html', debug=False, testing=False)
-    context['brand'] = dict(slug=brand['slug'], styles=brand['styles'])
-    COMPRESS_OFFLINE_CONTEXT.append(context)
-
+# -----------------------------------------------------------------------------------
+# set the location of GDAL and GEOS libraries on linux alpine
+# -----------------------------------------------------------------------------------
 GEOS_LIBRARY_PATH = '/usr/local/lib/libgeos_c.so'
 GDAL_LIBRARY_PATH = '/usr/local/lib/libgdal.so'
