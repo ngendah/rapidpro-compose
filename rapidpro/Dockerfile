@@ -51,6 +51,7 @@ RUN echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
 WORKDIR rapidpro/
 
 RUN set -ex \
+    && npm config set unsafe-perm true \
     && npm install -g coffeescript less\
     && npm install \
     && pip install -r "pip-freeze.txt" \
