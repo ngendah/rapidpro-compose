@@ -114,10 +114,10 @@ INSTALLED_APPS = INSTALLED_APPS + ("storages",)
 MIDDLEWARE = ("temba.middleware.ExceptionMiddleware",) + MIDDLEWARE
 
 # -----------------------------------------------------------------------------------
-# In development, perform background tasks in the web thread (synchronously)
+# Perform background tasks asynchronously
 # -----------------------------------------------------------------------------------
-CELERY_ALWAYS_EAGER = True
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+CELERY_ALWAYS_EAGER = False
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
 BROKER_BACKEND = "memory"
 
 # -----------------------------------------------------------------------------------
