@@ -6,4 +6,4 @@ install:
   - docker-compose -f main.yaml build --parallel
 
 script:
-  - python -c "assert(7==`docker images | wc -l`)"
+  - python -c "assert(8==`docker images | wc -l`)"
