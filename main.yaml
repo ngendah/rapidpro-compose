@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   redis:
     image: redis:alpine
@@ -6,7 +6,7 @@ services:
     image: postgis/postgis:9.6-3.0-alpine
     env_file:
       - rapidpro.env
-  backend:
+  rapidpro:
     image: rapidpro:6.0-alpine
     env_file:
       - rapidpro.env
@@ -29,12 +29,26 @@ services:
       args:
         MAILROOM_VERSION: 6.1.1
     environment:
-      - BACKEND_URL=http://backend:8000 
+      - BACKEND_URL=http://rapidpro:8000 
       - MAILROOM_REDIS=redis://redis:6379/15
       - MAILROOM_LOG_LEVEL=debug
     depends_on:
-      - backend
-  proxy:
+      - rapidpro
+  courier:
+    image: courier:6.1-ubuntu
+    env_file:
+      - rapidpro.env
+    build:
+      context: courier
+      args:
+        COURIER_VERSION: 6.1.6
+    environment:
+      - BACKEND_URL=http://rapidpro:8000 
+      - COURIER_REDIS=redis://redis:6379/15
+      - COURIER_LOG_LEVEL=debug
+    depends_on:
+      - rapidpro
+  nginx:
     build:
       context: nginx
       args:
@@ -45,7 +59,7 @@ services:
         CERT_LOCALITY: KE
     command: [nginx-debug, '-g', 'daemon off;']
     depends_on:
-      - backend
+      - rapidpro
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:8080:80"
