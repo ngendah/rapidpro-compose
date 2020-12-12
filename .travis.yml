@@ -1,8 +1,9 @@
+dist: focal
 language: python
 services: docker
 
 install:
-  - docker-compose -f main.yaml build
+  - docker-compose -f main.yaml build --parallel
 
 script:
-  - python -c "assert(5==`docker images | wc -l`)"
+  - python -c "assert(8==`docker images | wc -l`)"

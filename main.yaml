@@ -1,107 +1,54 @@
 version: '3'
 services:
-  backend:
-    image: rapidpro:5.5.0-alpine
+  redis:
+    image: redis:alpine
+  postgresql:
+    image: postgis/postgis:9.6-3.0-alpine
+    env_file:
+      - rapidpro.env
+  rapidpro:
+    image: rapidpro:6.0-alpine
+    env_file:
+      - rapidpro.env
     build:
       context: rapidpro
       args:
-        - RAPIDPRO_VERSION=v5.5.0
+        RAPIDPRO_VERSION: 6.0.5
     depends_on:
-      - mailroom
       - redis
       - postgresql
-    env_file:
-      - rapidpro.env
-      - secrets
     environment:
       - MAILROOM_URL=http://mailroom:8090
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
-      - REDIS_URL=redis://redis:6379/15
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-  celery_base:
-    image: rapidpro:5.5.0-alpine
-    depends_on:
-      - backend
-    env_file:
-      - secrets
-    environment:
-      - BOXTYPE=celery-base
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
-      - REDIS_URL=redis://redis:6379/15
-      - DJANGO_DEBUG=off
-      - LOG_LEVEL=ERROR
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-  celery_msgs:
-    image: rapidpro:5.5.0-alpine
-    depends_on:
-      - backend
-    env_file:
-      - secrets
-    environment:
-      - BOXTYPE=celery-msgs
-      - DATABASE_URL=postgresql://postgres:postgres@postgresql/rapidpro
-      - REDIS_URL=redis://redis:6379/15
-      - DJANGO_DEBUG=off
-      - LOG_LEVEL=ERROR
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-  redis:
-    image: redis:alpine
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-  postgresql:
-    image: mdillon/postgis:10-alpine
-    volumes:
-      - /var/lib/postgresql/10/:/var/lib/postgresql:Z
-    environment:
-      - POSTGRES_DB=rapidpro
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-  archiver:
-    image: praekeltfoundation/rp-indexer:2
-    environment:
-      - ARCHIVER_DB=postgres://postgres:postgres@postgresql/rapidpro?sslmode=disable
-      - ARCHIVER_DELETE=true
-    volumes:
-      - "/tmp:/tmp:Z"
+      - REDIS_URL=redis://redis:6379
   mailroom:
-   image: praekeltfoundation/mailroom:5.2.4
-   environment:
-     - MAILROOM_ADDRESS=0.0.0.0
-     - MAILROOM_DOMAIN=mailroom
-     - MAILROOM_DB=postgres://postgres:postgres@postgresql/rapidpro?sslmode=disable
-     - MAILROOM_REDIS=redis://redis:6379/15
-   ports:
-     - "8090:8080"
+    image: mailroom:6.1-ubuntu
+    env_file:
+      - rapidpro.env
+    build:
+      context: mailroom
+      args:
+        MAILROOM_VERSION: 6.1.1
+    environment:
+      - BACKEND_URL=http://rapidpro:8000 
+      - MAILROOM_REDIS=redis://redis:6379/15
+      - MAILROOM_LOG_LEVEL=debug
+    depends_on:
+      - rapidpro
   courier:
-   image: praekeltfoundation/courier:5.2.0
-   ports:
-     - "8080:8080"
-   depends_on:
-     - backend
-     - postgresql
-   logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
-   environment:
-     - COURIER_DOMAIN=courier
-     - COURIER_SPOOL_DIR=/tmp
-     - COURIER_DB=postgres://postgres:postgres@postgresql/rapidpro?sslmode=disable
-     - COURIER_REDIS=redis://redis:6379/15
-  rapidpro:
+    image: courier:6.1-ubuntu
+    env_file:
+      - rapidpro.env
+    build:
+      context: courier
+      args:
+        COURIER_VERSION: 6.1.6
+    environment:
+      - BACKEND_URL=http://rapidpro:8000 
+      - COURIER_REDIS=redis://redis:6379/15
+      - COURIER_LOG_LEVEL=debug
+    depends_on:
+      - rapidpro
+  nginx:
     build:
       context: nginx
       args:
@@ -112,12 +59,9 @@ services:
         CERT_LOCALITY: KE
     command: [nginx-debug, '-g', 'daemon off;']
     depends_on:
-      - courier
+      - rapidpro
     ports:
-      - "127.0.0.1:80:80"
-      - "127.0.0.1:443:443"
-      - "127.0.0.1:4443:4443"
-    logging:
-      driver: journald
-      options:
-        tag: "{{.Name}}"
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:8080:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:4443:4443"
