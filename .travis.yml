@@ -3,7 +3,7 @@ language: python
 services: docker
 
 install:
-  - docker-compose -f main.yaml build --parallel
+  - docker-compose build --parallel
 
 script:
   - python -c "assert(8==`docker images | wc -l`)"

@@ -1,1 +1,67 @@
-main.yaml
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+  postgresql:
+    image: postgis/postgis:9.6-3.0-alpine
+    env_file:
+      - rapidpro.env
+  rapidpro:
+    image: rapidpro:6.0-alpine
+    env_file:
+      - rapidpro.env
+    build:
+      context: rapidpro
+      args:
+        RAPIDPRO_VERSION: 6.0.5
+    depends_on:
+      - redis
+      - postgresql
+    environment:
+      - MAILROOM_URL=http://mailroom:8090
+      - REDIS_URL=redis://redis:6379
+  mailroom:
+    image: mailroom:6.1-ubuntu
+    env_file:
+      - rapidpro.env
+    build:
+      context: mailroom
+      args:
+        MAILROOM_VERSION: 6.1.1
+    environment:
+      - BACKEND_URL=http://rapidpro:8000 
+      - MAILROOM_REDIS=redis://redis:6379/15
+      - MAILROOM_LOG_LEVEL=debug
+    depends_on:
+      - rapidpro
+  courier:
+    image: courier:6.1-ubuntu
+    env_file:
+      - rapidpro.env
+    build:
+      context: courier
+      args:
+        COURIER_VERSION: 6.1.6
+    environment:
+      - BACKEND_URL=http://rapidpro:8000 
+      - COURIER_REDIS=redis://redis:6379/15
+      - COURIER_LOG_LEVEL=debug
+    depends_on:
+      - rapidpro
+  nginx:
+    build:
+      context: nginx
+      args:
+        CERT_ORG_NAME: kiboko.io
+        CERT_ORG_UNIT: kiboko.io
+        CERT_COMMON_NAME: rapidpro
+        CERT_COUNTRY: KE
+        CERT_LOCALITY: KE
+    command: [nginx-debug, '-g', 'daemon off;']
+    depends_on:
+      - rapidpro
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:8080:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:4443:4443"
