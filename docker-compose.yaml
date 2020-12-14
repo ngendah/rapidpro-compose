@@ -59,7 +59,8 @@ services:
         CERT_LOCALITY: KE
     command: [nginx-debug, '-g', 'daemon off;']
     depends_on:
-      - rapidpro
+      - courier
+      - mailroom
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:8080:80"
