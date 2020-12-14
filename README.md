@@ -38,15 +38,15 @@ docker-compose up --build
 https://[localhost, <ip-address>]
 ```
 
-  e.g `https://localhost`
+&nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
 
-  Because the server is using a self-signed SSL certificate, the browser will issue a warning. Ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
+>> Because the server is using a self-signed SSL certificate, the browser will issue a warning. Ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
 
 #### On Windows 10
 
 1. Install [git](https://github.com/git-guides/install-git), [docker](https://docs.docker.com/engine/install/), [docker compose](https://docs.docker.com/compose/install/) and confirm that docker is running.
 
-  While installing git configure it's line-endings conversion to use unix-style line endings.
+>> While installing git configure it's line-endings conversion to use unix-style line endings.
 
 2. Start the `git-bash console` installed on the desktop.
 
@@ -80,9 +80,9 @@ docker-compose up
 https://[localhost, <ip-address>]
 ```
 
-  e.g `https://localhost`
+&nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
 
-  Because the server is using a self-signed SSL certificate, the browser will issue a warning, ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
+>> Because the server is using a self-signed SSL certificate, the browser will issue a warning, ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
 
 
 ### NOTES
