@@ -3,7 +3,7 @@
 export COURIER_ADDRESS=0.0.0.0
 export COURIER_DB=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql/${POSTGRES_DB}?sslmode=disable
 
-RETRIES=20
+RETRIES=30
 STATUS=1
 until wget -q --method=HEAD $BACKEND_URL > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
   echo "Waiting for $BACKEND_URL server, $RETRIES remaining attempts ..."
