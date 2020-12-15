@@ -1,7 +1,7 @@
 RapidPro v6 docker-compose Stack
 =================================
 
-[![Build Status](https://travis-ci.com/ngendah/rapidpro.svg?branch=master)](https://travis-ci.com/ngendah/rapidpro)
+[![Build Status](https://travis-ci.com/ngendah/rapidpro-compose.svg?branch=master)](https://travis-ci.com/ngendah/rapidpro-compose)
 
 In order to build and run the server;
 
