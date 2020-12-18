@@ -7,13 +7,13 @@ services:
     env_file:
       - rapidpro.env
   rapidpro:
-    image: rapidpro:6.0-alpine
+    image: rapidpro:5.6-alpine
     env_file:
       - rapidpro.env
     build:
       context: rapidpro
       args:
-        RAPIDPRO_VERSION: 6.0.5
+        RAPIDPRO_VERSION: 5.6.5
     depends_on:
       - redis
       - postgresql
@@ -21,13 +21,13 @@ services:
       - MAILROOM_URL=http://mailroom:8090
       - REDIS_URL=redis://redis:6379
   mailroom:
-    image: mailroom:6.1-ubuntu
+    image: mailroom:5.6-ubuntu
     env_file:
       - rapidpro.env
     build:
       context: mailroom
       args:
-        MAILROOM_VERSION: 6.1.1
+        MAILROOM_VERSION: 5.6.1
     environment:
       - BACKEND_URL=http://rapidpro:8000 
       - MAILROOM_REDIS=redis://redis:6379/15
@@ -35,13 +35,13 @@ services:
     depends_on:
       - rapidpro
   courier:
-    image: courier:6.1-ubuntu
+    image: courier:5.6-ubuntu
     env_file:
       - rapidpro.env
     build:
       context: courier
       args:
-        COURIER_VERSION: 6.1.6
+        COURIER_VERSION: 5.6.0
     environment:
       - BACKEND_URL=http://rapidpro:8000 
       - COURIER_REDIS=redis://redis:6379/15
