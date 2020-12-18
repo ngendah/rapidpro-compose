@@ -93,6 +93,8 @@ https://[localhost, <ip-address>]
 
 3. RapidPro development guides are available [here](http://rapidpro.github.io/rapidpro/).
 
+4. The project major version tracks RapidPro major stable release.
+
 ### CREDITS
 
 1. [RapidPro](https://github.com/rapidpro/rapidpro) project.
