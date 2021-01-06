@@ -21,7 +21,7 @@ To start you will need build and run the server as follows;
 2. Clone the project.
 
 ```
-git clone https://github.com/ngendah/rapidpro.git
+git clone https://github.com/ngendah/rapidpro-compose.git
 ```
 
 3. Change your active directory to the cloned directory.
@@ -40,7 +40,7 @@ https://[localhost, <ip-address>]
 
 &nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
 
->> Because the server is using a self-signed SSL certificate, the browser will issue a warning. Ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
+>> Because the server is using a self-signed SSL/TLS certificate, the browser will issue a warning. Ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
 
 #### On Windows 10
 
@@ -53,7 +53,7 @@ https://[localhost, <ip-address>]
 3. Clone the project.
 
 ```
-git clone https://github.com/ngendah/rapidpro.git
+git clone https://github.com/ngendah/rapidpro-compose.git
 ```
 
 4. Change your active directory to the cloned directory.
@@ -82,7 +82,7 @@ https://[localhost, <ip-address>]
 
 &nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
 
->> Because the server is using a self-signed SSL certificate, the browser will issue a warning, ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
+>> Because the server is using a self-signed SSL/TLS certificate, the browser will issue a warning, ignore the warning and continue. e.g on Firefox, click on `advanced` button and accept.
 
 
 ### NOTES
