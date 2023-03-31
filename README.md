@@ -15,7 +15,7 @@ To start you will need build and run the server as follows;
 
 #### On Linux
 
-1. Install [git](https://github.com/git-guides/install-git), [docker](https://docs.docker.com/engine/install/), [docker compose](https://docs.docker.com/compose/install/) and confirm that docker is running.
+1. Install [git](https://github.com/git-guides/install-git), [docker](https://docs.docker.com/engine/), [docker compose](https://docs.docker.com/compose/) and confirm that docker is running.
 
 2. Clone the project.
 
