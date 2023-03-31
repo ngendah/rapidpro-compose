@@ -1,7 +1,7 @@
 RapidPro v6 docker compose Stack
 =================================
 
-![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yml/badge.svg)
+![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yaml/badge.svg)
 
 
 [RapidPro](https://github.com/rapidpro/rapidpro) is an interactive SMS builder which offers an intuitive UI for working with SMS workflows involving crafting, sending, receiving and processing SMS'es.

@@ -1,4 +1,4 @@
-name: Test compose file
+name: Build
 
 on: [push, pull_request]
 
