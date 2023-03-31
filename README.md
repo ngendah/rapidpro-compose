@@ -1,7 +1,7 @@
-RapidPro v6 docker-compose Stack
+RapidPro v6 docker compose Stack
 =================================
 
-[![Build Status](https://travis-ci.com/ngendah/rapidpro-compose.svg?branch=master)](https://travis-ci.com/ngendah/rapidpro-compose)
+![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yml/badge.svg)
 
 
 [RapidPro](https://github.com/rapidpro/rapidpro) is an interactive SMS builder which offers an intuitive UI for working with SMS workflows involving crafting, sending, receiving and processing SMS'es.
@@ -28,7 +28,7 @@ git clone https://github.com/ngendah/rapidpro-compose.git
 4. Build the images and start compose.
 
 ```
-docker-compose up --build
+docker compose up --build
 ```
 
 5. Once running you can access Rapidpro from your browser.
@@ -64,13 +64,13 @@ cd rapidpro
 5. Build the images.
 
 ```
-docker-compose build --parallel
+docker compose build
 ```
 
 6. Start the composer
 
 ```
-docker-compose up
+docker compose up
 ```
 
 7. Once running you can access Rapidpro from your browser.
