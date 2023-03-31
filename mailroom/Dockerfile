@@ -5,7 +5,7 @@ ARG MAILROOM_REPO
 ARG MAILROOM_VERSION
 
 ENV TZ=${TZ:-Africa/Nairobi}
-ENV MAILROOM_VERSION=$MAILROOM_VERSION
+ENV MAILROOM_VERSION=${MAILROOM_VERSION:-6.1.1}
 
 RUN set -ex \
     && apt-get -y update \
@@ -15,7 +15,7 @@ RUN cp /usr/share/zoneinfo/$TZ /etc/localtime \
     && dpkg-reconfigure -f noninteractive tzdata
 
 RUN set -ex; \
-    wget -qO mailroom.tar.gz "https://github.com/nyaruka/mailroom/releases/download/v${MAILROOM_VERSION}/mailroom_${MAILROOM_VERSION}_linux_amd64.tar.gz" \
+    wget -qO mailroom.tar.gz "https://github.com/rapidpro/mailroom/releases/download/v${MAILROOM_VERSION}/mailroom_${MAILROOM_VERSION}_linux_amd64.tar.gz" \
     && mkdir /mailroom \
     && tar -C /mailroom -xf mailroom.tar.gz \
     && mv /mailroom/mailroom /usr/local/bin/ \
