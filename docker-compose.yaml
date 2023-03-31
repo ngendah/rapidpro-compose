@@ -3,51 +3,55 @@ services:
   redis:
     image: redis:alpine
   postgresql:
-    image: postgis/postgis:9.6-3.0-alpine
+    image: postgis/postgis:14-3.3-alpine
     env_file:
-      - rapidpro.env
+    - rapidpro.env
+    environment:
+    - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+    - /var/run/postgresql/14/data:/var/lib/postgresql/data
   rapidpro:
-    image: rapidpro:6.0-alpine
+    image: rapidpro:6.2-alpine
     env_file:
-      - rapidpro.env
+    - rapidpro.env
     build:
       context: rapidpro
       args:
-        RAPIDPRO_VERSION: 6.0.5
+        RAPIDPRO_VERSION: 6.2.4
     depends_on:
-      - redis
-      - postgresql
+    - redis
+    - postgresql
     environment:
-      - MAILROOM_URL=http://mailroom:8090
-      - REDIS_URL=redis://redis:6379
+    - MAILROOM_URL=http://mailroom:8090
+    - REDIS_URL=redis://redis:6379
   mailroom:
-    image: mailroom:6.1-ubuntu
+    image: mailroom:6.2-ubuntu
     env_file:
-      - rapidpro.env
+    - rapidpro.env
     build:
       context: mailroom
       args:
-        MAILROOM_VERSION: 6.1.1
+        MAILROOM_VERSION: 6.2.3
     environment:
-      - BACKEND_URL=http://rapidpro:8000 
-      - MAILROOM_REDIS=redis://redis:6379/15
-      - MAILROOM_LOG_LEVEL=debug
+    - BACKEND_URL=http://rapidpro:8000 
+    - MAILROOM_REDIS=redis://redis:6379/15
+    - MAILROOM_LOG_LEVEL=debug
     depends_on:
-      - rapidpro
+    - rapidpro
   courier:
-    image: courier:6.1-ubuntu
+    image: courier:6.2-ubuntu
     env_file:
-      - rapidpro.env
+    - rapidpro.env
     build:
       context: courier
       args:
-        COURIER_VERSION: 6.1.6
+        COURIER_VERSION: 6.2.0
     environment:
-      - BACKEND_URL=http://rapidpro:8000 
-      - COURIER_REDIS=redis://redis:6379/15
-      - COURIER_LOG_LEVEL=debug
+    - BACKEND_URL=http://rapidpro:8000 
+    - COURIER_REDIS=redis://redis:6379/15
+    - COURIER_LOG_LEVEL=debug
     depends_on:
-      - rapidpro
+    - rapidpro
   nginx:
     build:
       context: nginx
@@ -56,10 +60,10 @@ services:
         CERT_COMMON_NAME: kiboko
     command: [nginx-debug, '-g', 'daemon off;']
     depends_on:
-      - courier
-      - mailroom
+    - courier
+    - mailroom
     ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:8080:80"
-      - "0.0.0.0:443:443"
-      - "0.0.0.0:4443:4443"
+    - "0.0.0.0:80:80"
+    - "0.0.0.0:8080:80"
+    - "0.0.0.0:443:443"
+    - "0.0.0.0:4443:4443"
