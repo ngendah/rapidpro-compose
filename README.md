@@ -64,7 +64,7 @@ cd rapidpro
 5. Build the images.
 
 ```
-docker compose build --parallel
+docker compose build
 ```
 
 6. Start the composer

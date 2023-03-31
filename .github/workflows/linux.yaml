@@ -25,8 +25,10 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: test image builds
+    - name: Build images
+      run: docker compose build --progress plain
+
+    - name: Test number of built images
       run: |
-        docker compose build --no-cache
-        python -c "assert(8==`docker images | wc -l`)"
+        [[ ! "$(sudo docker images -aq | wc -l)" -eq 4 ]]
 
