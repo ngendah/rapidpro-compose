@@ -26,6 +26,9 @@ jobs:
     - name: Build images
       run: docker compose build --progress plain
 
+    - name: Print built images
+      run: sudo docker images
+
     - name: Test number of built images
       run: |
         [[ ! "$(sudo docker images -aq | wc -l)" -eq 4 ]]
