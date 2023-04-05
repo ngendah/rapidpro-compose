@@ -1,3 +1,4 @@
+
 # -----------------------------------------------------------------------------------
 # Sample RapidPro settings file, this should allow you to deploy RapidPro locally on
 # a PostgreSQL database.
@@ -7,21 +8,11 @@
 #       password 'temba' (with postgis extensions installed)
 #     - a redis instance listening on localhost
 # -----------------------------------------------------------------------------------
-import os
+
 import copy
 import warnings
 
-from django.core.exceptions import ImproperlyConfigured
 from .settings_common import *  # noqa
-
-def env(var_name, default=None):
-        try:
-            if default:
-                return os.environ.get(var_name, default)
-            return os.environ[var_name]
-        except KeyError:
-            msg = "missing environment, name %s" % var_name
-            raise ImproperlyConfigured(msg)
 
 STORAGE_URL = "http://localhost:8000/media"
 
@@ -73,16 +64,12 @@ if localhost_domain is not None:
 # allow all hosts in dev
 ALLOWED_HOSTS = ["*"]
 
-# -----------------------------------------------------------------------------------
-# Customize database connection
-# -----------------------------------------------------------------------------------
-
-DATABASES["default"]["NAME"] = env("POSTGRES_DB", DATABASES["default"]["NAME"])
-DATABASES["default"]["USER"] = env("POSTGRES_USER", DATABASES["default"]["USER"])
-DATABASES["default"]["PASSWORD"] = env("POSTGRES_PASSWORD", DATABASES["default"]["PASSWORD"])
-DATABASES["default"]["HOST"] = env("POSTGRES_HOST", DATABASES["default"]["HOST"])
-DATABASES["default"]["PORT"] = env("POSTGRES_PORT", DATABASES["default"]["PORT"])
-DATABASES["direct"] = DATABASES["default"]
+# CSRF allow localhost
+CSRF_TRUSTED_ORIGINS = ["https://localhost",
+                        "http://localhost",
+                        "https://kiboko.net",
+                        "http://kiboko.net",
+                        ]
 
 # -----------------------------------------------------------------------------------
 # Redis & Cache Configuration (we expect a Redis instance on localhost)
@@ -90,18 +77,24 @@ DATABASES["direct"] = DATABASES["default"]
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL"),
+        "LOCATION": os.environ.get('REDIS_URL', CACHES["default"]["LOCATION"]),
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
 
-INTERNAL_IPS = ("127.0.0.1",)
+# -----------------------------------------------------------------------------------
+# Expand internal ip range
+# -----------------------------------------------------------------------------------
+INTERNAL_IPS = iptools.IpRangeList("127.0.0.1/24", "192.168.0.10",
+                                   "192.168.0.0/24", "172.16.0.0/12",
+                                   "10.0.0.0/8", "0.0.0.0")  # network block
+
 
 # -----------------------------------------------------------------------------------
 # Mailroom - localhost for dev, no auth token
 # -----------------------------------------------------------------------------------
 MAILROOM_URL = os.environ.get('MAILROOM_URL', 'http://localhost:8090')
-MAILROOM_AUTH_TOKEN = None
+MAILROOM_AUTH_TOKEN = os.environ.get('MAILROOM_AUTH_TOKEN')
 
 # -----------------------------------------------------------------------------------
 # Load development apps
@@ -114,11 +107,10 @@ INSTALLED_APPS = INSTALLED_APPS + ("storages",)
 MIDDLEWARE = ("temba.middleware.ExceptionMiddleware",) + MIDDLEWARE
 
 # -----------------------------------------------------------------------------------
-# Perform background tasks asynchronously
+# In development, perform background tasks in the web thread (synchronously)
 # -----------------------------------------------------------------------------------
-CELERY_ALWAYS_EAGER = False
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
-BROKER_BACKEND = "memory"
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 
 # -----------------------------------------------------------------------------------
 # This setting throws an exception if a naive datetime is used anywhere. (they should
@@ -133,9 +125,26 @@ warnings.filterwarnings(
 # -----------------------------------------------------------------------------------
 STATIC_URL = "/sitestatic/"
 
+# -----------------------------------------------------------------------------------
+# Configure database connection
+# -----------------------------------------------------------------------------------
+from urllib.parse import urlsplit
+params = urlsplit(os.environ.get('DATABASE_URL',
+                             "postgresql://temba:temba@localhost:5432/temba"))
 
-# -----------------------------------------------------------------------------------
-# set the location of GDAL and GEOS libraries on linux alpine
-# -----------------------------------------------------------------------------------
-GEOS_LIBRARY_PATH = '/usr/local/lib/libgeos_c.so'
-GDAL_LIBRARY_PATH = '/usr/local/lib/libgdal.so'
+user_passwd, host_port = params.netloc.split('@')
+default_database_config = {
+    "ENGINE": "django.contrib.gis.db.backends.postgis",
+    "NAME": params.path.replace('/','', 1),
+    "USER": user_passwd.split(':')[0],
+    "PASSWORD": user_passwd.split(':')[1],
+    "HOST": host_port.split(':')[0],
+    "PORT": host_port.split(':')[1],
+    "ATOMIC_REQUESTS": True,
+    "CONN_MAX_AGE": 60,
+    "OPTIONS": {},
+    "DISABLE_SERVER_SIDE_CURSORS": True,
+}
+
+DATABASES = {"default": default_database_config, "readonly": default_database_config.copy()}
+
