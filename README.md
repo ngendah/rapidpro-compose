@@ -1,5 +1,5 @@
-RapidPro v7 docker compose Stack
-=================================
+RapidPro v7 stack with docker compose
+=====================================
 
 ![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yaml/badge.svg)
 
@@ -11,7 +11,7 @@ It's stack is composed of various services which need to be started separately a
 This project simplifies the process by consolidating it's main services to a single configuration file easily started by a single command.
 
 
-To start you will need build and run the server as follows;
+To start you will need build and run the servers as follows;
 
 #### On Linux
 
