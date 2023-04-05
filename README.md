@@ -1,4 +1,4 @@
-RapidPro v6 docker compose Stack
+RapidPro v7 docker compose Stack
 =================================
 
 ![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yaml/badge.svg)
@@ -34,7 +34,7 @@ docker compose up --build
 5. Once running you can access Rapidpro from your browser.
 
 ```
-https://[localhost, <ip-address>]
+https://localhost
 ```
 
 &nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
@@ -76,7 +76,7 @@ docker compose up
 7. Once running you can access Rapidpro from your browser.
 
 ```
-https://[localhost, <ip-address>]
+https://localhost
 ```
 
 &nbsp;&nbsp;&nbsp;&nbsp;e.g `https://localhost`
