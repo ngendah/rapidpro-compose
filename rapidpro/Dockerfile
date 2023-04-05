@@ -30,7 +30,7 @@ RUN set -ex \
                 libncurses-dev \
                 libgdal-dev \
                 libzmq3-dev
-ENV RAPIDPRO_VERSION="v${RAPIDPRO_VERSION:-7.4.0}"
+ENV RAPIDPRO_VERSION="v$RAPIDPRO_VERSION"
 ENV RAPIDPRO_REPO=${RAPIDPRO_REPO:-rapidpro/rapidpro}
 ENV RAPIDPRO_REPO_URL="https://github.com/$RAPIDPRO_REPO/archive/$RAPIDPRO_VERSION.tar.gz"
 RUN echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
