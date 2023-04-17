@@ -25,4 +25,4 @@ WORKDIR app
 COPY startup.sh .
 EXPOSE 8090
 ENTRYPOINT ["/bin/sh"]
-CMD ["-c", "sleep 4000"]
+CMD ["-c", "./startup.sh"]
