@@ -1,17 +1,22 @@
-FROM python:3.9-slim as rapidpro-base-py3.9
+FROM python:3.9-slim as base-py3.9
 ARG RAPIDPRO_VERSION
-RUN apt-get update; \
-    apt-get install -y --no-install-recommends nodejs npm libxml2 libpcre3 \
-    openssl gdal-bin libgeos-dev supervisor postgresql-client
-RUN npm install -g coffeescript less
-WORKDIR /home/root
-ENV HOME=/home/root
-RUN python3 -m venv /usr/local/bin/
-RUN pip install -U pip setuptools
-RUN pip install poetry
+RUN set -ex \
+      && apt-get update \
+      && apt-get install -y --no-install-recommends nodejs npm libxml2 libpcre3 openssl libgeos-dev \
+      && npm install -g coffeescript less
+RUN set -ex \
+      && addgroup --system rapidpro \
+      && adduser --system --ingroup rapidpro rapidpro
+USER rapidpro
+WORKDIR /home/rapidpro
+RUN set -ex \
+      && python3 -m venv /home/rapidpro \
+      && pip install -U pip setuptools \
+      && pip install --user poetry
+ENV PATH="/home/rapidpro/.local/bin:$PATH"
 
-FROM rapidpro-base-py3.9 AS rapidpro-3.9-build
-WORKDIR /home/root
+FROM base-py3.9 AS build-py3.9
+USER root
 RUN set -ex \
         && apt-get update \
         && apt-get install -y \
@@ -30,27 +35,31 @@ RUN set -ex \
                 libncurses-dev \
                 libgdal-dev \
                 libzmq3-dev
-ENV RAPIDPRO_VERSION="v$RAPIDPRO_VERSION"
-ENV RAPIDPRO_REPO=${RAPIDPRO_REPO:-rapidpro/rapidpro}
-ENV RAPIDPRO_REPO_URL="https://github.com/$RAPIDPRO_REPO/archive/$RAPIDPRO_VERSION.tar.gz"
-RUN echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
-    && wget -q -O rapidpro.tar.gz $RAPIDPRO_REPO_URL \
-    && mkdir rapidpro \
-    && tar -C rapidpro -xf rapidpro.tar.gz --strip-components=1 \
-    && rm rapidpro.tar.gz
-WORKDIR /home/root/rapidpro/
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN mkdir .npm
-RUN npm install
-RUN poetry install
+USER rapidpro 
+RUN mkdir app
+RUN set -ex \
+      && export RAPIDPRO_VERSION="v$RAPIDPRO_VERSION" \
+      && export RAPIDPRO_REPO_URL="https://github.com/rapidpro/rapidpro/archive/$RAPIDPRO_VERSION.tar.gz" \
+      && echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
+      && wget -q -O rapidpro.tar.gz $RAPIDPRO_REPO_URL \
+      && tar -C app -xf rapidpro.tar.gz --strip-components=1 \
+      && rm rapidpro.tar.gz \
+      && export CRYPTOGRAPHY_DONT_BUILD_RUST=1 \
+      && cd app \
+      && mkdir .npm \
+      && npm install \
+      && poetry install --without dev --sync
 
-FROM rapidpro-base-py3.9 AS rapidpro
-WORKDIR $HOME
-RUN rm -rf $HOME/.cache $HOME/.local
-COPY --from=rapidpro-3.9-build $HOME/.cache/ $HOME/.cache/
-COPY --from=rapidpro-3.9-build $HOME/.local/ $HOME/.local/
-COPY --from=rapidpro-3.9-build $HOME/rapidpro/ $HOME/rapidpro/
-WORKDIR $HOME/rapidpro/
+FROM base-py3.9
+USER root
+RUN set -ex \
+      && apt-get install -y gdal-bin supervisor postgresql-client
+USER rapidpro
+COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.cache/ .cache/
+COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.local/ .local/
+COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/bin/ bin/
+COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/app/ app/
+WORKDIR app
 COPY stack/settings.py ./temba
 COPY startup.sh ./
 COPY supervisor.conf ./
