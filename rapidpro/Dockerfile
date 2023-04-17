@@ -64,4 +64,5 @@ COPY stack/settings.py ./temba
 COPY startup.sh ./
 COPY supervisor.conf ./
 EXPOSE 8000 8080
-ENTRYPOINT ["./startup.sh"]
+ENTRYPOINT ["/bin/sh"]
+CMD ["-c", "./startup.sh"]
