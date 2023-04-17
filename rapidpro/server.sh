@@ -32,5 +32,4 @@ poetry run ./manage.py migrate
 echo "creating admin user ..."
 poetry run ./manage.py shell -c "from django.contrib.auth.models import User; User.objects.create_superuser(\"$ADMIN_USERNAME\", \"$ADMIN_EMAIL\", \"$ADMIN_PASSWORD\")"
 
-echo "starting supervisor ..." 
-exec supervisord -nc ./supervisor.conf
+poetry run ./manage.py runserver 0.0.0.0:8000

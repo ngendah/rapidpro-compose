@@ -26,6 +26,19 @@ services:
     - POSTGRES_HOST=postgresql
     - MAILROOM_URL=http://mailroom:8090
     - REDIS_URL=redis://redis:6379
+  celery:
+    image: rapidpro:7.4-slim
+    env_file:
+    - ./rapidpro.env
+    command: ["-c", "./celery.sh"]
+    depends_on:
+    - rapidpro
+    environment:
+    - POSTGRES_PORT=5432
+    - POSTGRES_HOST=postgresql
+    - BACKEND_URL=http://rapidpro:8000
+    - MAILROOM_URL=http://mailroom:8090
+    - REDIS_URL=redis://redis:6379
   mailroom:
     image: mailroom:7.4-ubuntu
     env_file:

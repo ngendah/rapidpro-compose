@@ -53,16 +53,15 @@ RUN set -ex \
 FROM base-py3.9
 USER root
 RUN set -ex \
-      && apt-get install -y gdal-bin supervisor postgresql-client
+      && apt-get install -y gdal-bin wget postgresql-client
 USER rapidpro
 COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.cache/ .cache/
 COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.local/ .local/
 COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/bin/ bin/
 COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/app/ app/
 WORKDIR app
-COPY stack/settings.py ./temba
-COPY startup.sh ./
-COPY supervisor.conf ./
+COPY --chown=rapidpro:rapidpro stack/settings.py ./temba
+COPY --chown=rapidpro:rapidpro server.sh celery.sh ./
 EXPOSE 8000 8080
 ENTRYPOINT ["/bin/sh"]
-CMD ["-c", "./startup.sh"]
+CMD ["-c", "./server.sh"]
