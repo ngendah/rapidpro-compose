@@ -111,6 +111,8 @@ MIDDLEWARE = ("temba.middleware.ExceptionMiddleware",) + MIDDLEWARE
 # -----------------------------------------------------------------------------------
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_RESULT_BACKEND = None
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', CELERY_BROKER_URL)
 
 # -----------------------------------------------------------------------------------
 # This setting throws an exception if a naive datetime is used anywhere. (they should
