@@ -11,7 +11,7 @@ services:
     volumes:
     - /var/run/postgresql/15/data:/var/lib/postgresql/data
   rapidpro:
-    image: rapidpro:7.4-slim
+    image: rapidpro:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     build:
@@ -27,7 +27,7 @@ services:
     - MAILROOM_URL=http://mailroom:8090
     - REDIS_URL=redis://redis:6379
   celery:
-    image: rapidpro:7.4-slim
+    image: rapidpro:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     command: ["-c", "./celery.sh"]

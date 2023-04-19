@@ -21,6 +21,7 @@ RUN set -ex \
     && wget -qO courier.tar.gz "https://github.com/nyaruka/courier/releases/download/v${COURIER_VERSION}/courier_${COURIER_VERSION}_linux_amd64.tar.gz" \ 
     && tar -C ./app -xf courier.tar.gz \
     && rm -rf courier.tar.gz
+
 WORKDIR app
 COPY startup.sh .
 EXPOSE 8080
