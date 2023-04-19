@@ -1,16 +1,22 @@
-FROM python:3.9-slim as base-py3.9
+FROM ubuntu:latest as base-py3.9
 ARG RAPIDPRO_VERSION
 RUN set -ex \
       && apt-get update \
-      && apt-get install -y --no-install-recommends nodejs npm libxml2 libpcre3 openssl libgeos-dev \
-      && npm install -g coffeescript less
-RUN set -ex \
+      && apt-get install -y --no-install-recommends \
+                python3.9 \
+                python3-pip \
+                nodejs \
+                npm \
+                libxml2 \
+                libpcre3 \
+                openssl libgeos-dev \
+      && npm install -g coffeescript less \
       && addgroup --system rapidpro \
       && adduser --system --ingroup rapidpro rapidpro
 USER rapidpro
 WORKDIR /home/rapidpro
 RUN set -ex \
-      && python3 -m venv /home/rapidpro \
+      && python3.9 -m venv /home/rapidpro \
       && pip install -U pip setuptools \
       && pip install --user poetry
 ENV PATH="/home/rapidpro/.local/bin:$PATH"
@@ -34,8 +40,8 @@ RUN set -ex \
                 libreadline-dev \
                 libncurses-dev \
                 libgdal-dev \
-                libzmq3-dev
-USER rapidpro 
+               libzmq3-dev
+USER rapidpro
 RUN mkdir app
 RUN set -ex \
       && export RAPIDPRO_VERSION="v$RAPIDPRO_VERSION" \
