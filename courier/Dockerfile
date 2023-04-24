@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 ARG COURIER_REPO
 ARG COURIER_VERSION

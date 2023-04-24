@@ -1,10 +1,11 @@
-FROM ubuntu:latest as base-py3.9
+FROM ubuntu:20.04 as base-py3.9
 ARG RAPIDPRO_VERSION
 RUN set -ex \
       && apt-get update \
       && apt-get install -y --no-install-recommends \
                 python3.9 \
                 python3-pip \
+                python3.9-venv \
                 nodejs \
                 npm \
                 libxml2 \
