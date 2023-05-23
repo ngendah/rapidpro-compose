@@ -2,6 +2,20 @@ version: '3'
 services:
   redis:
     image: redis:alpine
+  influxdb:
+    image: bitnami/influxdb:latest
+    environment:
+    - INFLUXDB_HTTP_AUTH_ENABLED=false
+  fluentd:
+    image: fluentd:alpine
+    build:
+      context: fluentd
+    volumes:
+    - /var/log/rapidpro/:/fluentd/log/
+  grafana:
+    image: grafana/grafana
+    ports:
+    - 3000:3000
   postgresql:
     image: postgis/postgis:15-3.3-alpine
     env_file:
@@ -10,6 +24,10 @@ services:
     - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
     - /var/run/postgresql/15/data:/var/lib/postgresql/data
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: fluentd:2424
   rapidpro:
     image: rapidpro:7.4-ubuntu
     env_file:
