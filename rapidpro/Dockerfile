@@ -1,11 +1,8 @@
-FROM ubuntu:20.04 as base-py3.9
+FROM python:3.10-bookworm AS rapidpro-base
 ARG RAPIDPRO_VERSION
 RUN set -ex \
       && apt-get update \
       && apt-get install -y --no-install-recommends \
-                python3.9 \
-                python3-pip \
-                python3.9-venv \
                 nodejs \
                 npm \
                 libxml2 \
@@ -14,18 +11,15 @@ RUN set -ex \
       && npm install -g coffeescript less \
       && addgroup --system rapidpro \
       && adduser --system --ingroup rapidpro rapidpro
+RUN set -ex \
+      && pip install --no-cache-dir poetry
 USER rapidpro
 WORKDIR /home/rapidpro
-RUN set -ex \
-      && python3.9 -m venv /home/rapidpro \
-      && pip install -U pip setuptools \
-      && pip install --user poetry
-ENV PATH="/home/rapidpro/.local/bin:$PATH"
+ENV POETRY_VIRTUALENVS_PATH=/home/rapidpro
 
-FROM base-py3.9 AS build-py3.9
+FROM rapidpro-base AS rapidpro-build
 USER root
 RUN set -ex \
-        && apt-get update \
         && apt-get install -y \
                 wget \
                 build-essential \
@@ -45,6 +39,7 @@ RUN set -ex \
 USER rapidpro
 RUN mkdir app
 RUN set -ex \
+      && export HOME=/home/rapidpro \
       && export RAPIDPRO_VERSION="v$RAPIDPRO_VERSION" \
       && export RAPIDPRO_REPO_URL="https://github.com/rapidpro/rapidpro/archive/$RAPIDPRO_VERSION.tar.gz" \
       && echo "Downloading RapidPro $RAPIDPRO_VERSION from $RAPIDPRO_REPO_URL" \
@@ -57,17 +52,16 @@ RUN set -ex \
       && npm install \
       && poetry install --without dev --sync
 
-FROM base-py3.9
+FROM rapidpro-base
 USER root
 RUN set -ex \
       && apt-get install -y gdal-bin wget postgresql-client
 USER rapidpro
-COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.cache/ .cache/
-COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/.local/ .local/
-COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/bin/ bin/
-COPY --chown=rapidpro:rapidpro --from=build-py3.9 /home/rapidpro/app/ app/
+ENV HOME=/home/rapidpro
+COPY --chown=rapidpro:rapidpro --from=rapidpro-build /home/rapidpro/ .
 WORKDIR app
-COPY --chown=rapidpro:rapidpro stack/settings.py ./temba
+COPY --chown=rapidpro:rapidpro stack/settings.py ./temba/
+COPY --chown=rapidpro:rapidpro stack/admin.py ./temba/orgs/management/commands/
 COPY --chown=rapidpro:rapidpro server.sh celery.sh ./
 EXPOSE 8000 8080
 ENTRYPOINT ["/bin/sh"]

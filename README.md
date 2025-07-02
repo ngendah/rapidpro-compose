@@ -1,4 +1,4 @@
-RapidPro v7 stack with docker compose
+RapidPro v8 stack with docker compose
 =====================================
 
 ![Build Status](https://github.com/ngendah/rapidpro-compose/actions/workflows/linux.yaml/badge.svg)
