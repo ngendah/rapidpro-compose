@@ -11,54 +11,47 @@
 
 import copy
 import warnings
-
+from django.utils.translation import gettext_lazy as _
 from .settings_common import *  # noqa
 
+
+ADMINS = ((os.environ.get('ADMIN_USERNAME', "RapidPro"), os.environ.get('ADMIN_EMAIL', "code@yourdomain.io")),)
+MANAGERS = ADMINS
+
+
 STORAGE_URL = "http://localhost:8000/media"
+
+USER_TIME_ZONE = os.environ.get("TZ", USER_TIME_ZONE)
 
 # -----------------------------------------------------------------------------------
 # Add a custom brand for development
 # -----------------------------------------------------------------------------------
-
-custom = copy.deepcopy(BRANDING["rapidpro.io"])
-custom["aliases"] = ["custom-brand.org"]
-custom["name"] = "Custom Brand"
-custom["slug"] = "custom"
-custom["org"] = "Custom"
-custom["api_link"] = "http://custom-brand.io"
-custom["domain"] = "custom-brand.io"
-custom["email"] = "join@custom-brand.io"
-custom["support_email"] = "support@custom-brand.io"
-custom["allow_signups"] = True
-BRANDING["custom-brand.io"] = custom
-
-# make another copy as an alternate domain for custom-domain
-custom2 = copy.deepcopy(custom)
-custom2["aliases"] = ["custom-brand.io"]
-custom2["api_link"] = "http://custom-brand.org"
-custom2["domain"] = "custom-brand.org"
-custom2["email"] = "join@custom-brand.org"
-custom2["support_email"] = "support@custom-brand.org"
-BRANDING["custom-brand.org"] = custom2
-
-custom3 = copy.deepcopy(BRANDING["rapidpro.io"])
-custom3["aliases"] = ["no-topups.org"]
-custom3["name"] = "No Topups"
-custom3["slug"] = "notopups"
-custom3["org"] = "NoTopups"
-custom3["api_link"] = "http://no-topups.org"
-custom3["domain"] = "no-topups.org"
-custom3["email"] = "join@no-topups.org"
-custom3["support_email"] = "support@no-topups.org"
-custom3["allow_signups"] = True
-custom3["welcome_topup"] = 0
-custom3["default_plan"] = "trial"
-BRANDING["no-topups.org"] = custom3
+BRANDS.append(
+{
+        "slug": "localhost",
+        "name": "RapidPro",
+        "hosts": ["localhost.io"],
+        "org": "My Org",
+        "domain": "app.localhost.io",
+        "colors": dict(primary="#0c6596"),
+        "styles": ["brands/rapidpro/font/style.css"],
+        "email": "join@localhost.io",
+        "support_email": "support@localhost.io",
+        "link": "https://app.localhost.io",
+        "docs_link": "http://docs.localhost.io",
+        "ticket_domain": "tickets.localhost.io",
+        "favico": "brands/rapidpro/rapidpro.ico",
+        "splash": "brands/rapidpro/splash.jpg",
+        "logo": "images/logo-dark.svg",
+        "allow_signups": True,
+        "title": _("Visually build nationally scalable mobile applications"),
+    }
+)
 
 # set our domain on our brands to our tunnel domain if set
 localhost_domain = os.environ.get("LOCALHOST_TUNNEL_DOMAIN")
 if localhost_domain is not None:
-    for b in BRANDING.values():
+    for b in BRANDS:
         b["domain"] = localhost_domain
 
 # allow all hosts in dev
