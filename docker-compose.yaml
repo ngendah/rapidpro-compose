@@ -5,10 +5,10 @@ services:
     image: postgis/postgis:15-3.3-alpine
     env_file:
     - ./rapidpro.env
-#    environment:
-#    - PGDATA=/var/lib/postgresql/data/pgdata
-#    volumes:
-#    - /var/run/postgresql/15/data:/var/lib/postgresql/data
+    environment:
+    - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+    - /var/run/postgresql/15/data:/var/lib/postgresql/data
   rapidpro:
     image: rapidpro:7.4-ubuntu
     env_file:
@@ -52,8 +52,6 @@ services:
     - BACKEND_URL=http://rapidpro:8000 
     - MAILROOM_REDIS=redis://redis:6379/15
     - MAILROOM_LOG_LEVEL=debug
-    depends_on:
-    - rapidpro
   courier:
     image: courier:7.4-ubuntu
     env_file:
