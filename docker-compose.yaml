@@ -5,18 +5,18 @@ services:
     image: postgis/postgis:15-3.3-alpine
     env_file:
     - ./rapidpro.env
-    environment:
-    - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-    - /var/run/postgresql/15/data:/var/lib/postgresql/data
+#    environment:
+#    - PGDATA=/var/lib/postgresql/data/pgdata
+#    volumes:
+#    - /var/run/postgresql/15/data:/var/lib/postgresql/data
   rapidpro:
-    image: rapidpro:8.0-ubuntu
+    image: rapidpro:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     build:
       context: rapidpro
       args:
-        RAPIDPRO_VERSION: 8.0.1
+        RAPIDPRO_VERSION: 7.4.2
     depends_on:
     - redis
     - postgresql
@@ -26,7 +26,7 @@ services:
     - MAILROOM_URL=http://mailroom:8090
     - REDIS_URL=redis://redis:6379
   celery:
-    image: rapidpro:8.0-ubuntu
+    image: rapidpro:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     command: ["-c", "./celery.sh"]
@@ -39,13 +39,13 @@ services:
     - MAILROOM_URL=http://mailroom:8090
     - REDIS_URL=redis://redis:6379
   mailroom:
-    image: mailroom:8.0-ubuntu
+    image: mailroom:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     build:
       context: mailroom
       args:
-        MAILROOM_VERSION: 8.0.0
+        MAILROOM_VERSION: 7.4.1
     environment:
     - POSTGRES_PORT=5432
     - POSTGRES_HOST=postgresql
@@ -55,13 +55,13 @@ services:
     depends_on:
     - rapidpro
   courier:
-    image: courier:8.0-ubuntu
+    image: courier:7.4-ubuntu
     env_file:
     - ./rapidpro.env
     build:
       context: courier
       args:
-        COURIER_VERSION: 8.0.2
+        COURIER_VERSION: 7.4.0
     environment:
     - POSTGRES_PORT=5432
     - POSTGRES_HOST=postgresql

@@ -11,48 +11,54 @@
 
 import copy
 import warnings
-from django.utils.translation import gettext_lazy as _
+
 from .settings_common import *  # noqa
-
-
-ADMINS = ((os.environ.get('ADMIN_USERNAME', "RapidPro"), os.environ.get('ADMIN_EMAIL', "code@yourdomain.io")),)
-MANAGERS = ADMINS
-
+from django.utils.translation import gettext_lazy as _
 
 STORAGE_URL = "http://localhost:8000/media"
-
-USER_TIME_ZONE = os.environ.get("TZ", USER_TIME_ZONE)
 
 # -----------------------------------------------------------------------------------
 # Add a custom brand for development
 # -----------------------------------------------------------------------------------
-BRANDS.append(
-{
+# the name of our topup plan
+TOPUP_PLAN = "topups"
+WORKSPACE_PLAN = "workspace"
+
+# Default plan for new orgs
+DEFAULT_PLAN = TOPUP_PLAN
+
+BRANDING = {
+    "localhost.io": {
         "slug": "localhost",
         "name": "RapidPro",
-        "hosts": ["localhost.io"],
         "org": "My Org",
-        "domain": "app.localhost.io",
         "colors": dict(primary="#0c6596"),
         "styles": ["brands/rapidpro/font/style.css"],
+        "default_plan": TOPUP_PLAN,
+        "welcome_topup": 1000,
         "email": "join@localhost.io",
         "support_email": "support@localhost.io",
         "link": "https://app.localhost.io",
+        "api_link": "https://api.localhost.io",
         "docs_link": "http://docs.localhost.io",
+        "domain": "app.localhost.io",
         "ticket_domain": "tickets.localhost.io",
         "favico": "brands/rapidpro/rapidpro.ico",
         "splash": "brands/rapidpro/splash.jpg",
-        "logo": "images/logo-dark.svg",
+        "logo": "brands/rapidpro/logo.png",
         "allow_signups": True,
+        "flow_types": ["M", "V", "B", "S"],  # see Flow.FLOW_TYPES
+        "location_support": True,
+        "tiers": dict(multi_user=0, multi_org=0),
+        "bundles": [],
+        "welcome_packs": [dict(size=5000, name="Demo Account"), dict(size=100000, name="My Org Account")],
         "title": _("Visually build nationally scalable mobile applications"),
+        "description": _("Visually build nationally scalable mobile applications from anywhere in the world."),
+        "credits": "Copyright &copy; 2012-2022 UNICEF, Nyaruka. All Rights Reserved.",
+        "support_widget": False,
     }
-)
-
-# set our domain on our brands to our tunnel domain if set
-localhost_domain = os.environ.get("LOCALHOST_TUNNEL_DOMAIN")
-if localhost_domain is not None:
-    for b in BRANDS:
-        b["domain"] = localhost_domain
+}
+DEFAULT_BRAND = os.environ.get("DEFAULT_BRAND", "localhost.io")
 
 # allow all hosts in dev
 ALLOWED_HOSTS = ["*"]
@@ -104,8 +110,6 @@ MIDDLEWARE = ("temba.middleware.ExceptionMiddleware",) + MIDDLEWARE
 # -----------------------------------------------------------------------------------
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_RESULT_BACKEND = None
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', CELERY_BROKER_URL)
 
 # -----------------------------------------------------------------------------------
 # This setting throws an exception if a naive datetime is used anywhere. (they should
