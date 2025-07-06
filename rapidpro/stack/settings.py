@@ -65,8 +65,6 @@ ALLOWED_HOSTS = ["*"]
 # CSRF allow localhost
 CSRF_TRUSTED_ORIGINS = ["https://localhost",
                         "http://localhost",
-                        "https://kiboko.net",
-                        "http://kiboko.net",
                         ]
 
 # -----------------------------------------------------------------------------------

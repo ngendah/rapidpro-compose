@@ -72,8 +72,8 @@ services:
     build:
       context: nginx
       args:
-        CERT_ORG_NAME: kiboko.net
-        CERT_COMMON_NAME: kiboko
+        CERT_ORG_NAME: localhost
+        CERT_COMMON_NAME: localhost
     command: [nginx-debug, '-g', 'daemon off;']
     depends_on:
     - courier
