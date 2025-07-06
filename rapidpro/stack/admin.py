@@ -4,8 +4,6 @@ from django.core.management.base import BaseCommand
 from temba.orgs.models import Org, OrgRole, User
 from temba.settings import *
 
-from temba.settings_common import USER_TIME_ZONE, BRANDS, DEFAULT_BRAND
-
 
 class Command(BaseCommand):  # pragma: no cover
     help = "Utility to manage admin user"
@@ -46,22 +44,22 @@ class Command(BaseCommand):  # pragma: no cover
             raise CommandError(f"Brand not found for the default organization {DEFAULT_BRAND}")
         name = brand['name']
         slug = brand['slug']
+        topup =  brand['welcome_topup']
         org = Org.objects.filter(name=name).first()
         if not org:
             self.stdout.write(f"Creating organization {name} ... ")
             timezone = pytz.timezone(USER_TIME_ZONE)
-            api_url = brand['link']
             org = Org.objects.create(
                 name=name,
                 timezone=timezone,
                 brand=slug,
                 slug=slug,
-                features=[Org.FEATURE_USERS, Org.FEATURE_NEW_ORGS, Org.FEATURE_CHILD_ORGS],
-                flow_languages=["eng"],
+                is_multi_user=True,
+                is_multi_org=True,
                 created_by=user,
                 modified_by=user,
             )
-            org.initialize()
+            org.initialize(branding=brand, topup_size=topup)
         self.stdout.write(self.style.SUCCESS("OK") + "\n")
         return org
 
@@ -71,13 +69,11 @@ class Command(BaseCommand):  # pragma: no cover
             self.stdout.write(self.style.NOTICE(f"User {user.username} already belongs to organization {org.name} ... ") + "\n")
             return org
         org.add_user(user, OrgRole.ADMINISTRATOR)
+        org.add_user(user, OrgRole.EDITOR)
         org.save()
         self.stdout.write(self.style.SUCCESS("OK") + "\n")
         return  org
 
     @property
-    def default_brand(self)->str | None:
-        for brand in BRANDS:
-            if brand['slug']==DEFAULT_BRAND:
-                return brand
-        return None
+    def default_brand(self)->str:
+        return BRANDING[DEFAULT_BRAND]

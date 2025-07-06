@@ -42,7 +42,6 @@ poetry run ./manage.py migrate
 
 echo "Compressing assets ..."
 poetry run ./manage.py collectstatic --noinput --verbosity=0
-poetry run ./manage.py compress --extension=".haml" --settings=temba.settings_compress
 
 echo "creating admin user ..."
 poetry run ./manage.py admin --root --username="$ADMIN_USERNAME" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD"

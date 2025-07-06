@@ -58,6 +58,7 @@ FROM base-py3.9
 COPY --from=build-py3.9 /home/rapidpro/ .
 WORKDIR app
 COPY stack/settings.py ./temba
+COPY stack/admin.py ./temba/orgs/management/commands/
 COPY server.sh celery.sh ./
 EXPOSE 8000 8080
 ENTRYPOINT ["/bin/sh"]

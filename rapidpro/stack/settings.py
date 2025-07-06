@@ -26,9 +26,8 @@ WORKSPACE_PLAN = "workspace"
 
 # Default plan for new orgs
 DEFAULT_PLAN = TOPUP_PLAN
-
 BRANDING = {
-    "localhost.io": {
+    "rapidpro.io": {
         "slug": "localhost",
         "name": "RapidPro",
         "org": "My Org",
@@ -36,13 +35,13 @@ BRANDING = {
         "styles": ["brands/rapidpro/font/style.css"],
         "default_plan": TOPUP_PLAN,
         "welcome_topup": 1000,
-        "email": "join@localhost.io",
-        "support_email": "support@localhost.io",
-        "link": "https://app.localhost.io",
-        "api_link": "https://api.localhost.io",
-        "docs_link": "http://docs.localhost.io",
-        "domain": "app.localhost.io",
-        "ticket_domain": "tickets.localhost.io",
+        "email": "join@rapidpro.io",
+        "support_email": "support@rapidpro.io",
+        "link": "https://app.rapidpro.io",
+        "api_link": "https://api.rapidpro.io",
+        "docs_link": "http://docs.rapidpro.io",
+        "domain": "app.rapidpro.io",
+        "ticket_domain": "tickets.rapidpro.io",
         "favico": "brands/rapidpro/rapidpro.ico",
         "splash": "brands/rapidpro/splash.jpg",
         "logo": "brands/rapidpro/logo.png",
@@ -51,14 +50,14 @@ BRANDING = {
         "location_support": True,
         "tiers": dict(multi_user=0, multi_org=0),
         "bundles": [],
-        "welcome_packs": [dict(size=5000, name="Demo Account"), dict(size=100000, name="My Org Account")],
+        "welcome_packs": [dict(size=5000, name="Demo Account"), dict(size=100000, name="UNICEF Account")],
         "title": _("Visually build nationally scalable mobile applications"),
         "description": _("Visually build nationally scalable mobile applications from anywhere in the world."),
         "credits": "Copyright &copy; 2012-2022 UNICEF, Nyaruka. All Rights Reserved.",
         "support_widget": False,
     }
 }
-DEFAULT_BRAND = os.environ.get("DEFAULT_BRAND", "localhost.io")
+DEFAULT_BRAND = os.environ.get("DEFAULT_BRAND", "rapidpro.io")
 
 # allow all hosts in dev
 ALLOWED_HOSTS = ["*"]
@@ -80,7 +79,9 @@ CACHES = {
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
-
+CELERY_RESULT_BACKEND = None
+CELERY_BROKER_URL = os.environ.get('REDIS_URL',
+                             "redis://%s:%d/%d" % (REDIS_HOST, REDIS_PORT, REDIS_DB))
 # -----------------------------------------------------------------------------------
 # Expand internal ip range
 # -----------------------------------------------------------------------------------
